@@ -1,0 +1,7 @@
+{
+"lambdaRole":"arn:aws:iam::960076017976:role/LabRole",
+"region": "us-west-2",
+"dynamoDBtableCarnet": "carnetResponseDB",
+"dynamoDBtableRekognition": "rekogintionAnalysesDB",
+"s3BucketName": "myauto-avto-btu"
+}

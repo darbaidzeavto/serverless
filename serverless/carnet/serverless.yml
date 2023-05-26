@@ -1,0 +1,74 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: carnet
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: ${file(../configuration.json):region}
+  environment:
+    DYNAMO_DB_TABLEcarnet: ${file(../configuration.json):dynamoDBtableCarnet}
+    DYNAMO_DB_TABLErekognition: ${file(../configuration.json):dynamoDBtableRekognition}
+    REKOGNITION_SNS_TOPIC_ARN: ${self:custom.rekognitionSNSTopicArn}
+    REKOGNITION_ROLE_ARN: ${file(../configuration.json):lambdaRole}
+
+functions:
+  lambda_handler:
+    handler: handler.lambda_handler
+    role: ${file(../configuration.json):lambdaRole}
+    events:
+       - s3:
+          bucket: ${file(../configuration.json):s3BucketName}
+          event: s3:ObjectCreated:*
+custom:
+  rekognitionSNSTopicArn:
+    Fn::Join:
+      - ':'
+      - - arn
+        - aws
+        - sns
+        - Ref: AWS::Region
+        - Ref: AWS::AccountId
+        - willNotifyWhenRekognitionDone
+
+resources:
+  Resources:
+    myTableCarnet:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${file(../configuration.json):dynamoDBtableCarnet}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    myTableRekognition:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${file(../configuration.json):dynamoDBtableRekognition}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
